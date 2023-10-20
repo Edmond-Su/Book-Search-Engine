@@ -9,7 +9,12 @@ import {
 } from 'react-bootstrap';
 
 import Auth from '../utils/auth';
-import { saveBook, searchGoogleBooks } from '../utils/API';
+import { useMutation } from '@apollo/client';
+import { SAVE_BOOK } from '../utils/mutations';
+
+import { searchGoogleBooks } from '../utils/API';
+
+// import { saveBook, searchGoogleBooks } from '../utils/API';
 import { saveBookIds, getSavedBookIds } from '../utils/localStorage';
 
 const SearchBooks = () => {
@@ -20,6 +25,8 @@ const SearchBooks = () => {
 
   // create state to hold saved bookId values
   const [savedBookIds, setSavedBookIds] = useState(getSavedBookIds());
+
+  const [saveBook, { error, data }] = useMutation(SAVE_BOOK)  
 
   // set up useEffect hook to save `savedBookIds` list to localStorage on component unmount
   // learn more here: https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup
@@ -48,7 +55,7 @@ const SearchBooks = () => {
         bookId: book.id,
         authors: book.volumeInfo.authors || ['No author to display'],
         title: book.volumeInfo.title,
-        description: book.volumeInfo.description,
+        description: book.volumeInfo.description || 'No description',
         image: book.volumeInfo.imageLinks?.thumbnail || '',
       }));
 
@@ -67,22 +74,34 @@ const SearchBooks = () => {
     // get token
     const token = Auth.loggedIn() ? Auth.getToken() : null;
 
+    console.log(bookToSave)
+
     if (!token) {
       return false;
     }
 
-    try {
-      const response = await saveBook(bookToSave, token);
+    try{
+      const { data } = await saveBook({
+        variables: {
+          bookId: bookToSave.bookId,
+          authors: bookToSave.authors,
+          title: bookToSave.title,
+          description: bookToSave.description,
+          image: bookToSave.image
+        },
+      })
 
-      if (!response.ok) {
-        throw new Error('something went wrong!');
+      // const {data} = await saveBook({
+      //   variables: { ...bookToSave },
+      // })
+
+      if (data) {
+        setSavedBookIds([...savedBookIds, bookToSave.bookId]);
       }
-
-      // if book successfully saves to user's account, save book id to state
-      setSavedBookIds([...savedBookIds, bookToSave.bookId]);
-    } catch (err) {
-      console.error(err);
+    }catch (err) {
+      console.log(err)
     }
+
   };
 
   return (

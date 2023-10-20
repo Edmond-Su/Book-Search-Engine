@@ -6,7 +6,7 @@ const resolvers = {
         users: async () => {
             return User.find().populate('savedBooks')
         },
-        user: async(parent, { username }) => {
+        me: async(parent, { username }) => {
             return User.findOne({ username }).populate('savedBooks');
         }
     },
@@ -33,13 +33,13 @@ const resolvers = {
         
             return { token, user };
         },
-        saveBook: async ( parent, { bookId, authors, title, description, image  } , context ) => {
+        saveBook: async ( parent, { bookId, authors, title, description, image, link } , context ) => {
             if ( context.user) {
                 return User.findByIdAndUpdate(
                     {_id: context.user.Id},
                     {
                         $addToSet: {
-                            savedBooks: { authors, description, bookId, image, title }
+                            savedBooks: { bookId, authors, description, title, image, link }
                         }
                     },
                     { new:true }

@@ -1,7 +1,6 @@
 # Book-Search-Engine
 
 ## Link 
-CURRENTLY NOT WORKING
 https://serene-springs-92695-77c6e7f2e0e1.herokuapp.com/
 
 ## Description

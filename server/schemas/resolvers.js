@@ -8,7 +8,7 @@ const resolvers = {
         },
         me: async (parent, args, context) => {
             if (context.user) {
-              return User.findOne({ _id: context.user._id }).populate('savedBooks');
+              return User.findById(context.user._id);
             }
             throw AuthenticationError;
           },
@@ -39,7 +39,7 @@ const resolvers = {
         saveBook: async ( parent, { bookId, authors, title, description, image, link } , context ) => {
             if ( context.user) {
                 return User.findByIdAndUpdate(
-                    {_id: context.user.Id},
+                    {_id: context.user._id},
                     {
                         $addToSet: {
                             savedBooks: { bookId, authors, description, title, image, link }
@@ -53,8 +53,8 @@ const resolvers = {
         deleteBook: async ( parent, { bookId }, context ) => {
             if ( context.user ){
                 return User.findByIdAndUpdate(
-                    {_id: context.user.Id},
-                    { $pull: {savedBooks:  bookId } },
+                    {_id: context.user._id},
+                    { $pull: {savedBooks:  {bookId} } },
                     { new: true }
                 )
             }

@@ -18,18 +18,19 @@ const SavedBooks = () => {
   
   const [deleteBook, { error } ] = useMutation(DELETE_BOOK)
 
-  console.log(Auth.getProfile().data.username)
   const { loading, data } = useQuery(QUERY_ME);
 
+  useEffect(() => {
+    if (data?.me) {
+      setUserData(data.me)
+    }
+  },[data])
+
+  console.log(userData)
 
   if (!data) {
     return <div>Something went wrong!!!</div>;
   }
-
-  const user = data?.user || {};
-  
-  setUserData(user);
-  
 
   if (loading) {
     return <div>Loading...</div>;
@@ -40,11 +41,10 @@ const SavedBooks = () => {
 
     try {
       const { data } = await deleteBook({
-        variables: { ...bookId }
+        variables: { bookId }
       })
 
-      const updatedUser = data;
-      setUserData(updatedUser);
+      setUserData(data.deleteBook);
       // upon success, remove book's id from localStorage
       removeBookId(bookId);
     } catch (err) {
@@ -52,25 +52,24 @@ const SavedBooks = () => {
     }
   };
 
-
   return (
     <>
-      <div fluid className="text-light bg-dark p-5">
+      <div className="text-light bg-dark p-5">
         <Container>
           <h1>Viewing saved books!</h1>
         </Container>
       </div>
       <Container>
         <h2 className='pt-5'>
-          {userData.savedBooks.length
+          {userData?.savedBooks?.length
             ? `Viewing ${userData.savedBooks.length} saved ${userData.savedBooks.length === 1 ? 'book' : 'books'}:`
             : 'You have no saved books!'}
         </h2>
         <Row>
-          {userData.savedBooks.map((book) => {
+          {userData?.savedBooks?.map((book) => {
             return (
-              <Col md="4">
-                <Card key={book.bookId} border='dark'>
+              <Col key={book.bookId} md="4">
+                <Card border='dark'>
                   {book.image ? <Card.Img src={book.image} alt={`The cover for ${book.title}`} variant='top' /> : null}
                   <Card.Body>
                     <Card.Title>{book.title}</Card.Title>
